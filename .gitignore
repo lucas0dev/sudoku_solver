@@ -32,3 +32,4 @@ sudoku_solver-*.tar
 npm-debug.log
 /assets/node_modules/
 
+/.vscode/
