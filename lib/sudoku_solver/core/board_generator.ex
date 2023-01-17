@@ -5,7 +5,36 @@ defmodule SudokuSolver.Core.BoardGenerator do
   by solver.
   """
 
-  def generate_full_board do
+  @typedoc """
+  Tuple with column and row number of cell in a board.
+  """
+  @type cell :: {non_neg_integer(), non_neg_integer()}
+
+  @spec solvable_board(non_neg_integer()) :: nonempty_list
+  def solvable_board(amount_of_zeroes) do
+    full_board = full_board()
+    cells_to_delete = get_random_cells(amount_of_zeroes)
+    remove_cells(full_board, cells_to_delete)
+  end
+
+  @spec remove_cells(list, list(cell)) :: list
+  defp remove_cells(board, cells_to_delete) do
+    for {row, y} <- Enum.with_index(board) do
+      Enum.map(Enum.with_index(row), fn {col, x} ->
+        if Enum.member?(cells_to_delete, {x, y}), do: 0, else: col
+      end)
+    end
+  end
+
+  @spec get_random_cells(non_neg_integer()) :: nonempty_list(cell)
+  defp get_random_cells(number) do
+    cells = for x <- 0..8, y <- 0..8, do: {x, y}
+    cells = Enum.shuffle(cells)
+    Enum.take(cells, number)
+  end
+
+  @spec full_board :: nonempty_list
+  defp full_board do
     full_board(empty_board(), 0, [])
   end
 
@@ -41,20 +70,19 @@ defmodule SudokuSolver.Core.BoardGenerator do
     Enum.shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9])
   end
 
-  @spec update_board(list, {non_neg_integer(), non_neg_integer()}, non_neg_integer()) :: list
+  @spec update_board(list, cell, non_neg_integer()) :: list
   defp update_board(board, {x, y}, value) do
     row = Enum.at(board, y)
     updated_row = List.replace_at(row, x, value)
     List.replace_at(board, y, updated_row)
   end
 
-  @spec board_at(list, {non_neg_integer(), non_neg_integer()}) :: non_neg_integer()
+  @spec board_at(list, cell) :: non_neg_integer()
   defp board_at(board, {x, y}) do
     Enum.at(Enum.at(board, y), x)
   end
 
-  @spec check_row(list, {non_neg_integer(), non_neg_integer()}, non_neg_integer()) ::
-          {:check_ok} | {:check_error, :row}
+  @spec check_row(list, cell, non_neg_integer()) :: {:check_ok} | {:check_error, :row}
   defp check_row(board, {_x, y}, value) do
     row = Enum.at(board, y)
     row_occupied = Enum.member?(row, value)
@@ -66,8 +94,7 @@ defmodule SudokuSolver.Core.BoardGenerator do
     end
   end
 
-  @spec check_col(list, {non_neg_integer(), non_neg_integer()}, non_neg_integer()) ::
-          {:check_ok} | {:check_error, :col}
+  @spec check_col(list, cell, non_neg_integer()) :: {:check_ok} | {:check_error, :col}
   defp check_col(board, {x, _y}, value) do
     col = Enum.map(board, fn row -> Enum.at(row, x) end)
     col_occupied = Enum.member?(col, value)
@@ -79,8 +106,7 @@ defmodule SudokuSolver.Core.BoardGenerator do
     end
   end
 
-  @spec check_box(list, {non_neg_integer(), non_neg_integer()}, non_neg_integer()) ::
-          {:check_ok} | {:check_error, :box}
+  @spec check_box(list, cell, non_neg_integer()) :: {:check_ok} | {:check_error, :box}
   defp check_box(board, {cell_x, cell_y}, value) do
     start_x = div(cell_x, 3) * 3
     start_y = div(cell_y, 3) * 3

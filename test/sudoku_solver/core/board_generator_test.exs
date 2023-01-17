@@ -19,12 +19,12 @@ defmodule SudokuSolver.Core.BoardGeneratorTest do
   end
 
   setup_all do
-    full_board = Generator.generate_full_board()
+    full_board = Generator.solvable_board(0)
     required_values = [1, 2, 3, 4, 5, 6, 7, 8, 9]
     {:ok, full_board: full_board, required_values: required_values}
   end
 
-  describe "generate_full_board()" do
+  describe "generate_solvable_board(amount_of_zeroes) when amount_of_zeroes == 0" do
     test "should return board with all cells > 0", %{full_board: full_board}  do
       cells = List.flatten(full_board)
 
@@ -60,11 +60,20 @@ defmodule SudokuSolver.Core.BoardGeneratorTest do
     end
 
     test "should generate different board each time", %{full_board: full_board}  do
-      board = Generator.generate_full_board()
+      board = Generator.solvable_board(0)
 
       assert board != full_board == true
     end
+  end
 
+  describe "generate_solvable_board(amount_of_zeroes) when amount_of_zeroes > 0" do
+    test "should return board with chosen amount of zeroed out cells" do
+      empty_amount = Enum.random(1..81)
+      board = Generator.solvable_board(empty_amount)
+      cells = List.flatten(board)
+      number_of_empty = length(Enum.filter(cells, fn cell -> cell == 0 end))
 
+      assert number_of_empty == empty_amount
+    end
   end
 end
