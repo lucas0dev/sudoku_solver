@@ -17,7 +17,7 @@ defmodule SudokuSolverWeb.Router do
   scope "/", SudokuSolverWeb do
     pipe_through :browser
 
-    get "/", PageController, :index
+    live "/", BoardLive.Show, :show
   end
 
   # Other scopes may use custom stacks.

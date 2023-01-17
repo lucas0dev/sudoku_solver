@@ -118,3 +118,84 @@
   0% { opacity: 1; }
   100% { opacity: 0; }
 }
+
+
+
+.main {
+  margin-top: 50px;
+  display: flex;
+ 
+ }
+ 
+ .buttons {
+   display: flex;
+   flex-direction: column;
+ }
+ 
+ .board {
+   display: flex;
+   justify-content: flex-start;
+ 
+ }
+ 
+ .tbody {
+   display: flex;
+   flex-direction: column;
+  
+ }
+ 
+ .cell {
+   width: 50px;
+   height: 50px;
+   display: flex;
+   padding: 0;
+   justify-content: center;
+   align-items: center;
+ }
+ 
+ .row {
+   margin: 0;
+   width: 100%;
+ }
+ 
+ 
+ .row:nth-child(2n) >  .cell:nth-child(2n) {
+   background-color: #b6d1df;
+ }
+ 
+ .row:nth-child(2n+1) >  .cell:nth-child(2n+1) {
+   background-color: #b6d1df;
+ }
+ 
+ .row2, .row5, .row8 {
+   border-bottom: 1px solid;
+ }
+ 
+ .row0 {
+   border-top: 1px solid;
+ }
+ 
+ .cell0 {
+   border-left: 1px solid;
+ }
+ 
+ .cell2, .cell5, .cell8 {
+   border-right: 1px solid;
+ }
+
+ .cell_value {
+  height: 100% !important;
+  margin-bottom: 0px;
+  outline: solid 0px;
+  border: 0px !important;
+  padding: 0px !important;
+  text-align: center;
+ }
+
+ .cell_value:hover{
+  background-color: rgb(32, 134, 202);
+  cursor: pointer;
+}
+.cell_value:focus{
+  background-color: rgb(32, 134, 202);
+}
