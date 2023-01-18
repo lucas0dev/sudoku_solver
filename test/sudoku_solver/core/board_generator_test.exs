@@ -2,23 +2,10 @@ defmodule SudokuSolver.Core.BoardGeneratorTest do
   use ExUnit.Case
 
   alias SudokuSolver.Core.BoardGenerator, as: Generator
-
-  def board do
-    [
-      [9, 3, 0, 1, 4, 5, 0, 7, 8],
-      [1, 0, 4, 0, 0, 0, 0, 0, 0],
-      [0, 0, 5, 0, 0, 0, 0, 2, 0],
-      [3, 0, 0, 0, 0, 0, 0, 0, 0],
-      [4, 0, 0, 0, 0, 0, 0, 0, 0],
-      [5, 0, 0, 0, 0, 0, 0, 0, 0],
-      [6, 0, 0, 0, 0, 0, 0, 0, 0],
-      [7, 2, 0, 0, 0, 0, 0, 0, 0],
-      [8, 0, 9, 0, 0, 0, 0, 0, 0]
-    ]
-  end
+  alias BoardHelper, as: Helper
 
   setup_all do
-    full_board = Generator.solvable_board(0)
+    full_board = Helper.full_board()
     required_values = [1, 2, 3, 4, 5, 6, 7, 8, 9]
     {:ok, full_board: full_board, required_values: required_values}
   end

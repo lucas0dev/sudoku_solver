@@ -5,39 +5,25 @@ defmodule SudokuSolver.Core.BoardGenerator do
   by solver.
   """
 
-  @type cell :: {non_neg_integer(), non_neg_integer()}
+  alias SudokuSolver.Core.Board, as: Board
+
+  @type cell :: Board.cell()
 
   @spec solvable_board(non_neg_integer()) :: nonempty_list
   def solvable_board(amount_of_zeroes) do
     full_board = full_board()
     cells_to_delete = get_random_cells(amount_of_zeroes)
-    remove_cells(full_board, cells_to_delete)
-  end
-
-  @spec remove_cells(list, list(cell)) :: list
-  defp remove_cells(board, cells_to_delete) do
-    for {row, y} <- Enum.with_index(board) do
-      Enum.map(Enum.with_index(row), fn {col, x} ->
-        if Enum.member?(cells_to_delete, {x, y}), do: 0, else: col
-      end)
-    end
-  end
-
-  @spec get_random_cells(non_neg_integer()) :: nonempty_list(cell)
-  defp get_random_cells(number) do
-    cells = for x <- 0..8, y <- 0..8, do: {x, y}
-    cells = Enum.shuffle(cells)
-    Enum.take(cells, number)
+    Board.remove_cells(full_board, cells_to_delete)
   end
 
   @spec full_board :: nonempty_list
   defp full_board do
-    full_board(empty_board(), 0, [])
+    full_board(Board.empty_board(), 0, [])
   end
 
   @spec full_board(list, non_neg_integer(), []) :: nonempty_list
   defp full_board(_board, _cell_to_fill, []) do
-    full_board(empty_board(), 0, shuffled_values())
+    full_board(Board.empty_board(), 0, shuffled_values())
   end
 
   @spec full_board(list, non_neg_integer(), nonempty_list(non_neg_integer())) :: nonempty_list
@@ -48,9 +34,9 @@ defmodule SudokuSolver.Core.BoardGenerator do
       row = div(cell_to_fill, 9)
       col = rem(cell_to_fill, 9)
       [number | rest] = values
-      updated_board = update_board(board, {col, row}, number)
+      updated_board = Board.update(board, {col, row}, number)
 
-      with true <- board_at(board, {col, row}) == 0,
+      with true <- Board.board_at(board, {col, row}) == 0,
            {:check_ok} <- check_row(board, {col, row}, number),
            {:check_ok} <- check_col(board, {col, row}, number),
            {:check_ok} <- check_box(board, {col, row}, number) do
@@ -60,23 +46,6 @@ defmodule SudokuSolver.Core.BoardGenerator do
         {:check_error, _reason} -> full_board(board, cell_to_fill, rest)
       end
     end
-  end
-
-  @spec shuffled_values :: nonempty_list(non_neg_integer())
-  defp shuffled_values do
-    Enum.shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9])
-  end
-
-  @spec update_board(list, cell, non_neg_integer()) :: list
-  defp update_board(board, {x, y}, value) do
-    row = Enum.at(board, y)
-    updated_row = List.replace_at(row, x, value)
-    List.replace_at(board, y, updated_row)
-  end
-
-  @spec board_at(list, cell) :: non_neg_integer()
-  defp board_at(board, {x, y}) do
-    Enum.at(Enum.at(board, y), x)
   end
 
   @spec check_row(list, cell, non_neg_integer()) :: {:check_ok} | {:check_error, :row}
@@ -123,18 +92,15 @@ defmodule SudokuSolver.Core.BoardGenerator do
     end
   end
 
-  @spec empty_board :: [[0, ...], ...]
-  defp empty_board do
-    [
-      [0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0]
-    ]
+  @spec shuffled_values :: nonempty_list(non_neg_integer())
+  defp shuffled_values do
+    Enum.shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9])
+  end
+
+  @spec get_random_cells(non_neg_integer()) :: nonempty_list(cell)
+  defp get_random_cells(number) do
+    cells = for x <- 0..8, y <- 0..8, do: {x, y}
+    cells = Enum.shuffle(cells)
+    Enum.take(cells, number)
   end
 end
