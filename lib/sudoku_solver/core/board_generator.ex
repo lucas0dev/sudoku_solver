@@ -5,9 +5,6 @@ defmodule SudokuSolver.Core.BoardGenerator do
   by solver.
   """
 
-  @typedoc """
-  Tuple with column and row number of cell in a board.
-  """
   @type cell :: {non_neg_integer(), non_neg_integer()}
 
   @spec solvable_board(non_neg_integer()) :: nonempty_list
@@ -54,9 +51,9 @@ defmodule SudokuSolver.Core.BoardGenerator do
       updated_board = update_board(board, {col, row}, number)
 
       with true <- board_at(board, {col, row}) == 0,
-            {:check_ok} <- check_row(board, {col, row}, number),
-            {:check_ok} <- check_col(board, {col, row}, number),
-            {:check_ok} <- check_box(board, {col, row}, number) do
+           {:check_ok} <- check_row(board, {col, row}, number),
+           {:check_ok} <- check_col(board, {col, row}, number),
+           {:check_ok} <- check_box(board, {col, row}, number) do
         full_board(updated_board, cell_to_fill + 1, shuffled_values())
       else
         false -> full_board(board, cell_to_fill + 1, shuffled_values())
@@ -111,10 +108,11 @@ defmodule SudokuSolver.Core.BoardGenerator do
     start_x = div(cell_x, 3) * 3
     start_y = div(cell_y, 3) * 3
 
-    box = for offset_x <- [0, 1, 2], offset_y <- [0, 1, 2] do
-      row = Enum.at(board, offset_y + start_y)
-      Enum.at(row, (offset_x + start_x))
-    end
+    box =
+      for offset_x <- [0, 1, 2], offset_y <- [0, 1, 2] do
+        row = Enum.at(board, offset_y + start_y)
+        Enum.at(row, offset_x + start_x)
+      end
 
     box_occupied = Enum.member?(box, value)
 
