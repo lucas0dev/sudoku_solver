@@ -2,7 +2,7 @@ defmodule SudokuSolverWeb.BoardLive.Show do
   use SudokuSolverWeb, :live_view
 
   alias SudokuSolver.Core.BoardGenerator, as: Generator
-  alias SudokuSolver.Core.Scanner, as: Scanner
+  alias SudokuSolver.Core.SimpleSolver, as: SimpleSolver
 
   @impl true
   def mount(_params, _session, socket) do
@@ -26,9 +26,9 @@ defmodule SudokuSolverWeb.BoardLive.Show do
   end
 
   @impl true
-  def handle_event("scan", _, socket) do
+  def handle_event("solve", _, socket) do
     board = socket.assigns.board
-    new_board = Scanner.run(board)
+    new_board = SimpleSolver.solve(board)
     {:noreply, assign(socket, board: new_board)}
   end
 end

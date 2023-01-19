@@ -1,8 +1,8 @@
 defmodule SudokuSolver.Core.BoardGeneratorTest do
   use ExUnit.Case
 
-  alias SudokuSolver.Core.BoardGenerator, as: Generator
   alias BoardHelper, as: Helper
+  alias SudokuSolver.Core.BoardGenerator, as: Generator
 
   setup_all do
     full_board = Helper.full_board()
