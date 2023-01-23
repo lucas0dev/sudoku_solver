@@ -7,7 +7,7 @@ defmodule SudokuSolver.Core.BoardGenerator do
 
   alias SudokuSolver.Core.Board, as: Board
 
-  @type cell :: Board.cell()
+  @type coordinates :: Board.coordinates()
 
   @spec solvable_board(non_neg_integer()) :: nonempty_list
   def solvable_board(amount_of_zeroes) do
@@ -48,7 +48,7 @@ defmodule SudokuSolver.Core.BoardGenerator do
     end
   end
 
-  @spec check_row(list, cell, non_neg_integer()) :: {:check_ok} | {:check_error, :row}
+  @spec check_row(list, coordinates, non_neg_integer()) :: {:check_ok} | {:check_error, :row}
   defp check_row(board, {_x, y}, value) do
     row = Enum.at(board, y)
     row_occupied = Enum.member?(row, value)
@@ -60,7 +60,7 @@ defmodule SudokuSolver.Core.BoardGenerator do
     end
   end
 
-  @spec check_col(list, cell, non_neg_integer()) :: {:check_ok} | {:check_error, :col}
+  @spec check_col(list, coordinates, non_neg_integer()) :: {:check_ok} | {:check_error, :col}
   defp check_col(board, {x, _y}, value) do
     col = Enum.map(board, fn row -> Enum.at(row, x) end)
     col_occupied = Enum.member?(col, value)
@@ -72,7 +72,7 @@ defmodule SudokuSolver.Core.BoardGenerator do
     end
   end
 
-  @spec check_box(list, cell, non_neg_integer()) :: {:check_ok} | {:check_error, :box}
+  @spec check_box(list, coordinates, non_neg_integer()) :: {:check_ok} | {:check_error, :box}
   defp check_box(board, {cell_x, cell_y}, value) do
     start_x = div(cell_x, 3) * 3
     start_y = div(cell_y, 3) * 3
@@ -97,7 +97,7 @@ defmodule SudokuSolver.Core.BoardGenerator do
     Enum.shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9])
   end
 
-  @spec get_random_cells(non_neg_integer()) :: nonempty_list(cell)
+  @spec get_random_cells(non_neg_integer()) :: nonempty_list(coordinates)
   defp get_random_cells(number) do
     cells = for x <- 0..8, y <- 0..8, do: {x, y}
     cells = Enum.shuffle(cells)

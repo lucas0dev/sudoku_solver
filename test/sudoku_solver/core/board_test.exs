@@ -17,6 +17,121 @@ defmodule SudokuSolver.Core.BoardTest do
      empty_board: empty_board}
   end
 
+  describe "board_correct?(board) when board is empty" do
+    test "should return true", %{empty_board: empty_board} do
+      result = Board.board_correct?(empty_board)
+
+      assert result == true
+    end
+  end
+
+  describe "board_correct?(board) when board is solved" do
+    test "should return true", %{full_board: full_board} do
+      result = Board.board_correct?(full_board)
+
+      assert result == true
+    end
+  end
+
+  describe "board_correct?(board) when board can be solved" do
+    test "should return true", %{board: board} do
+      result = Board.board_correct?(board)
+
+      assert result == true
+    end
+  end
+
+  describe "board_correct?(board) when board can't be solved" do
+    test "should return false", %{unsolvable_board: unsolvable_board} do
+      result = Board.board_correct?(unsolvable_board)
+
+      assert result == false
+    end
+  end
+
+  describe "check_if_full(board) when board is solved" do
+    test "should return {:full, board}", %{full_board: full_board} do
+      result = Board.check_if_full(full_board)
+
+      assert result == {:full, full_board}
+    end
+  end
+
+  describe "check_if_full(board) with unsolved board" do
+    test "should return {:not_full, board}", %{board: board} do
+      result = Board.check_if_full(board)
+
+      assert result == {:not_full, board}
+    end
+  end
+
+  describe "all_allowed_values(board) when board is empty" do
+    test "it should generate list of allowed to fill values for each cell", %{
+      empty_board: empty_board
+    } do
+      values = Board.all_allowed_values(empty_board)
+
+      result =
+        Enum.all?(values, fn {_coordinates, values} -> values == [1, 2, 3, 4, 5, 6, 7, 8, 9] end)
+
+      assert result == true
+    end
+  end
+
+  describe "all_allowed_values(board) when board is not empty" do
+    test "it should generate list of allowed to fill values for each cell", %{board: board} do
+      allowed_values = Board.all_allowed_values(board)
+      empty_cells = for x <- 0..8, y <- 0..8, Enum.at(Enum.at(board, y), x) == 0, do: {x, y}
+
+      assert true == Enum.all?(allowed_values, fn {_coordinates, values} -> values != [] end)
+
+      assert true ==
+               Enum.all?(allowed_values, fn {coordinates, _value} ->
+                 Enum.member?(empty_cells, coordinates)
+               end)
+    end
+  end
+
+  describe "all_allowed_values(board) when board is solved" do
+    test "it should return empty list", %{full_board: full_board} do
+      allowed_values = Board.all_allowed_values(full_board)
+
+      assert allowed_values == []
+    end
+  end
+
+  describe "next_possible_value(board, {col, row}) when there is a possible value" do
+    test "should return {:ok, value}", %{board: board} do
+      {:ok, value} = Board.next_possible_value(board, {6, 8})
+
+      assert value in [8, 9] == true
+    end
+  end
+
+  describe "next_possible_value(board, {col, row}) when there is no possible value" do
+    test "should return  {:error, nil}", %{board: board} do
+      {:error, value} = Board.next_possible_value(board, {1, 0})
+
+      assert value == nil
+    end
+  end
+
+  describe "possible_for_cell(board, cell) when there are some possible values" do
+    test "should return all possible values for given cell", %{board: board} do
+      {:ok, result} = Board.possible_for_cell(board, {6, 8})
+
+      assert result == [8, 9]
+    end
+  end
+
+  describe "possible_for_cell(board, cell) when there is no possible value" do
+    test "should return empty list", %{board: board} do
+      {:error, reason} = Board.possible_for_cell(board, {4, 3})
+
+      assert reason == :no_values
+    end
+  end
+
   describe "board_at(board, {x, y})" do
     test "should return value of a cell from the board", %{full_board: full_board} do
       assert Board.board_at(full_board, {1, 1}) == 5
@@ -150,86 +265,6 @@ defmodule SudokuSolver.Core.BoardTest do
       expected_values = [{3, 3}, {3, 4}, {3, 5}, {4, 3}, {4, 4}, {4, 5}, {5, 3}, {5, 4}, {5, 5}]
 
       assert result == expected_values
-    end
-  end
-
-  describe "get_possible_values(board, cell) when there are some possible values" do
-    test "should return all possible values for given cell", %{board: board} do
-      result = Board.get_possible_values(board, {6, 8})
-
-      assert result == [8, 9]
-    end
-  end
-
-  describe "get_possible_values(board, cell) when there is no possible value" do
-    test "should return empty list", %{board: board} do
-      result = Board.get_possible_values(board, {4, 3})
-
-      assert result == []
-    end
-  end
-
-  describe "next_possible_value(board, {col, row}) when there is a possible value" do
-    test "should return {:ok, value}", %{board: board} do
-      {:ok, value} = Board.next_possible_value(board, {6, 8})
-
-      assert value in [8, 9] == true
-    end
-  end
-
-  describe "next_possible_value(board, {col, row}) when there is no possible value" do
-    test "should return  {:error, nil}", %{board: board} do
-      {:error, value} = Board.next_possible_value(board, {1, 0})
-
-      assert value == nil
-    end
-  end
-
-  describe "check_if_full(board) when board is solved" do
-    test "should return {:full, board}", %{full_board: full_board} do
-      result = Board.check_if_full(full_board)
-
-      assert result == {:full, full_board}
-    end
-  end
-
-  describe "check_if_full(board) with unsolved board" do
-    test "should return {:not_full, board}", %{board: board} do
-      result = Board.check_if_full(board)
-
-      assert result == {:not_full, board}
-    end
-  end
-
-  describe "board_correct?(board) when board is empty" do
-    test "should return true", %{empty_board: empty_board} do
-      result = Board.board_correct?(empty_board)
-
-      assert result == true
-    end
-  end
-
-  describe "board_correct?(board) when board is solved" do
-    test "should return true", %{full_board: full_board} do
-      result = Board.board_correct?(full_board)
-
-      assert result == true
-    end
-  end
-
-  describe "board_correct?(board) when board can be solved" do
-    test "should return true", %{board: board} do
-      result = Board.board_correct?(board)
-
-      assert result == true
-    end
-  end
-
-  describe "board_correct?(board) when board can't be solved" do
-    test "should return false", %{unsolvable_board: unsolvable_board} do
-      result = Board.board_correct?(unsolvable_board)
-
-      assert result == false
     end
   end
 end

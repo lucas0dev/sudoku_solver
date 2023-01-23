@@ -8,7 +8,7 @@ defmodule SudokuSolver.Core.Scanner do
 
   alias SudokuSolver.Core.Board, as: Board
 
-  @type cell :: Board.cell()
+  @type coordinates :: Board.coordinates()
 
   @spec run(list) :: list
   def run(board) do
@@ -22,7 +22,7 @@ defmodule SudokuSolver.Core.Scanner do
     end
   end
 
-  @spec scan_cell(list, cell) :: list
+  @spec scan_cell(list, coordinates) :: list
   defp scan_cell(board, cell) do
     possible_for_cell = possible_for_cell(board, cell)
     possible_for_groups = possible_for_groups(board, cell)
@@ -40,7 +40,7 @@ defmodule SudokuSolver.Core.Scanner do
     end
   end
 
-  @spec possible_for_groups(list, cell) :: list
+  @spec possible_for_groups(list, coordinates) :: list
   defp possible_for_groups(board, cell) do
     box_to_check = Board.box_coordinates(cell) -- [cell]
     row_to_check = Board.row_coordinates(board, cell) -- [cell]
@@ -51,7 +51,7 @@ defmodule SudokuSolver.Core.Scanner do
     [col, row, box]
   end
 
-  @spec get_values_for(list, list(cell)) :: list(non_neg_integer()) | []
+  @spec get_values_for(list, list(coordinates)) :: list(non_neg_integer()) | []
   defp get_values_for(board, cells_to_check) do
     possible_values =
       for {x, y} <- cells_to_check, Board.board_at(board, {x, y}) == 0, into: [] do
@@ -62,7 +62,7 @@ defmodule SudokuSolver.Core.Scanner do
     |> Enum.uniq()
   end
 
-  @spec possible_for_cell(list, {integer, integer}) :: list(non_neg_integer()) | []
+  @spec possible_for_cell(list, coordinates) :: list(non_neg_integer()) | []
   defp possible_for_cell(board, cell) do
     row_possible = Board.possible_in_row(board, cell)
     col_possible = Board.possible_in_col(board, cell)

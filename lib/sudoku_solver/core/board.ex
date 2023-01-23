@@ -5,7 +5,7 @@ defmodule SudokuSolver.Core.Board do
 
   @all_possible_values [1, 2, 3, 4, 5, 6, 7, 8, 9]
 
-  @type cell :: {non_neg_integer(), non_neg_integer()}
+  @type coordinates :: {non_neg_integer(), non_neg_integer()}
 
   @spec empty_board :: [[0, ...], ...]
   def empty_board do
@@ -52,42 +52,58 @@ defmodule SudokuSolver.Core.Board do
     end
   end
 
-  @spec next_possible_value(list, cell) :: {:ok, non_neg_integer()} | {:error, nil}
-  def next_possible_value(board, {col, row}) do
-    value =
-      get_possible_values(board, {col, row})
-      |> Enum.shuffle()
-      |> Enum.at(0)
+  @spec all_allowed_values(list) :: list
+  def all_allowed_values(board) do
+    rows_num = length(board) - 1
+    cols_num = length(Enum.at(board, 0)) - 1
 
-    if value != nil do
-      {:ok, value}
-    else
-      {:error, nil}
+    for x <- 0..cols_num, y <- 0..rows_num, board_at(board, {x, y}) == 0, into: [] do
+      {:ok, values} = possible_for_cell(board, {x, y})
+      {{x, y}, values}
     end
   end
 
-  @spec get_possible_values(list, cell) :: list
-  def get_possible_values(board, cell) do
+  @spec next_possible_value(list, coordinates) :: {:ok, non_neg_integer()} | {:error, nil}
+  def next_possible_value(board, {col, row}) do
+    case possible_for_cell(board, {col, row}) do
+      {:ok, values} ->
+        first_value =
+          values
+          |> Enum.shuffle()
+          |> Enum.at(0)
+
+        {:ok, first_value}
+
+      _ ->
+        {:error, nil}
+    end
+  end
+
+  @spec possible_for_cell(list, coordinates) :: {:ok, list} | {:error, :no_values}
+  def possible_for_cell(board, cell) do
     for_row = possible_in_row(board, cell)
     for_col = possible_in_col(board, cell)
     for_box = possible_in_box(board, cell)
 
-    Enum.reject(for_row, fn x -> !Enum.member?(for_col, x) || !Enum.member?(for_box, x) end)
+    values =
+      Enum.reject(for_row, fn x -> !Enum.member?(for_col, x) || !Enum.member?(for_box, x) end)
+
+    if values != [], do: {:ok, values}, else: {:error, :no_values}
   end
 
-  @spec board_at(list, cell) :: non_neg_integer() | nil
+  @spec board_at(list, coordinates) :: non_neg_integer() | nil
   def board_at(board, {x, y}) do
     Enum.at(Enum.at(board, y), x)
   end
 
-  @spec update(list, cell, non_neg_integer()) :: list
+  @spec update(list, coordinates, non_neg_integer()) :: list
   def update(board, {x, y}, value) do
     row = Enum.at(board, y)
     updated_row = List.replace_at(row, x, value)
     List.replace_at(board, y, updated_row)
   end
 
-  @spec remove_cells(list, list(cell)) :: list
+  @spec remove_cells(list, list(coordinates)) :: list
   def remove_cells(board, cells_to_delete) do
     for {row, y} <- Enum.with_index(board) do
       Enum.map(Enum.with_index(row), fn {col, x} ->
@@ -96,7 +112,7 @@ defmodule SudokuSolver.Core.Board do
     end
   end
 
-  @spec empty_cells(list) :: list(cell) | []
+  @spec empty_cells(list) :: list(coordinates) | []
   def empty_cells(board) do
     row_length = length(board)
     col_length = length(Enum.at(board, 0))
@@ -107,40 +123,40 @@ defmodule SudokuSolver.Core.Board do
         do: {x, y}
   end
 
-  @spec possible_in_row(list, cell) :: list(non_neg_integer()) | []
+  @spec possible_in_row(list, coordinates) :: list(non_neg_integer()) | []
   def possible_in_row(board, {_x, y}) do
     row_size = length(Enum.at(board, y))
     row_values = for cell_x <- 0..(row_size - 1), do: board_at(board, {cell_x, y})
     @all_possible_values -- row_values
   end
 
-  @spec possible_in_col(list, cell) :: list(non_neg_integer()) | []
+  @spec possible_in_col(list, coordinates) :: list(non_neg_integer()) | []
   def possible_in_col(board, {x, _y}) do
     col_length = length(board)
     col_values = for cell_y <- 0..(col_length - 1), do: board_at(board, {x, cell_y})
     @all_possible_values -- col_values
   end
 
-  @spec possible_in_box(list, cell) :: list(non_neg_integer()) | []
+  @spec possible_in_box(list, coordinates) :: list(non_neg_integer()) | []
   def possible_in_box(board, {x, y}) do
     cells_to_check = box_coordinates({x, y})
     values_in_box = for {cell_x, cell_y} <- cells_to_check, do: board_at(board, {cell_x, cell_y})
     @all_possible_values -- values_in_box
   end
 
-  @spec row_coordinates(list, cell) :: list(cell)
+  @spec row_coordinates(list, coordinates) :: list(coordinates)
   def row_coordinates(board, {_x, y}) do
     col_length = length(board)
     for x <- 0..(col_length - 1), do: {x, y}
   end
 
-  @spec col_coordinates(list, cell) :: list(cell)
+  @spec col_coordinates(list, coordinates) :: list(coordinates)
   def col_coordinates(board, {x, _y}) do
     row_length = length(Enum.at(board, 0))
     for y <- 0..(row_length - 1), do: {x, y}
   end
 
-  @spec box_coordinates(cell) :: list(cell)
+  @spec box_coordinates(coordinates) :: list(coordinates)
   def box_coordinates({x, y}) do
     start_x = div(x, 3) * 3
     start_y = div(y, 3) * 3
@@ -151,10 +167,12 @@ defmodule SudokuSolver.Core.Board do
     [{0, 0}, {3, 0}, {6, 0}, {0, 3}, {3, 3}, {6, 3}, {0, 6}, {3, 6}, {6, 6}]
   end
 
+  @spec remove_zeroes(list) :: list
   defp remove_zeroes(nested_list) do
     Enum.map(nested_list, fn list -> Enum.reject(list, fn value -> value == 0 end) end)
   end
 
+  @spec group_valid?(list) :: true | false
   defp group_valid?(nested_list) do
     Enum.all?(nested_list, fn list -> list == Enum.uniq(list) end)
   end
