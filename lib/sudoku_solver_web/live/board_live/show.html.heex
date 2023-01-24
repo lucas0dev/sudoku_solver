@@ -1,10 +1,13 @@
 <div class="main">
   <table class="board">
     <tbody class="tbody">
-      <%= live_component SudokuSolverWeb.BoardLive.BoardComponent, board: @board %>
+      <%= live_component SudokuSolverWeb.Live.BoardLive.BoardComponent, board: @board %>
     </tbody>
   </table>
 
+  <div class="empty_amount">
+      <input type="text" maxlength="2" class="empty_amount" value="">
+  </div>
   <div class="buttons">
     <div phx-click="generate" class="button gen-btn">Generate</div>
     <div phx-click="reset" class="button gen-btn">Reset</div>
