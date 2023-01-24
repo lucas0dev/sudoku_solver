@@ -6,7 +6,7 @@ defmodule SudokuSolver.Core.Scanner do
   it places it in the board.
   """
 
-  alias SudokuSolver.Core.Board, as: Board
+  alias SudokuSolver.Core.Board
 
   @type coordinates :: Board.coordinates()
 

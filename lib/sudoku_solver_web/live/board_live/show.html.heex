@@ -5,12 +5,15 @@
     </tbody>
   </table>
 
-  <div class="empty_amount">
-      <input type="text" maxlength="2" class="empty_amount" value="">
-  </div>
-  <div class="buttons">
-    <div phx-click="generate" class="button gen-btn">Generate</div>
-    <div phx-click="reset" class="button gen-btn">Reset</div>
-    <div phx-click="solve" class="button check-btn">Solve</div>
+  <div class="side-panel">
+    <form class="gen-form" phx-submit="generate">
+      <label class="amount-label">Amount of empty cells:</label>
+      <%= if @amount do %>
+        <input type="text" name="amount" class="amount" value={@amount}>
+      <% end %>
+      <button type="submit" class="button">Generate</button>
+    </form>
+    <button phx-click="solve" class="button">Solve</button>
+    <button phx-click="reset" class="button">Reset</button>
   </div>
 </div>

@@ -5,7 +5,7 @@ defmodule SudokuSolver.Core.BoardGenerator do
   by solver.
   """
 
-  alias SudokuSolver.Core.Board, as: Board
+  alias SudokuSolver.Core.Board
 
   @type coordinates :: Board.coordinates()
 
