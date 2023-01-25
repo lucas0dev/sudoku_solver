@@ -1,15 +1,10 @@
 defmodule SudokuSolverWeb.Live.BoardLive.Show do
   use SudokuSolverWeb, :live_view
 
-  alias SudokuSolver.Core.Board
-  alias SudokuSolver.Core.BoardGenerator, as: Generator
-  alias SudokuSolver.Core.BacktrackingSolver, as: BTSolver
-  alias SudokuSolver.Core.Scanner
-
   @impl true
   def mount(_params, _session, socket) do
     amount = 60
-    board = Generator.solvable_board(amount)
+    board = SudokuSolver.generate_board(amount)
 
     board =
       if connected?(socket) do
@@ -18,13 +13,13 @@ defmodule SudokuSolverWeb.Live.BoardLive.Show do
         %{}
       end
 
-    {:ok, assign(socket, board: board, old_board: board, amount: amount)}
+    {:ok, assign(socket, board: board, old_board: board, amount: amount, message: "")}
   end
 
   def handle_event("reset", _, socket) do
     board = socket.assigns.old_board
 
-    {:noreply, assign(socket, board: board)}
+    {:noreply, assign(socket, board: board, message: "")}
   end
 
   def handle_event("generate", data, socket) do
@@ -40,29 +35,27 @@ defmodule SudokuSolverWeb.Live.BoardLive.Show do
 
     board =
       if amount in 0..81 do
-        Generator.solvable_board(amount)
+        SudokuSolver.generate_board(amount)
       else
-        Generator.solvable_board(default_amount)
+        SudokuSolver.generate_board(default_amount)
       end
 
-    {:noreply, assign(socket, board: board, old_board: board, amount: amount)}
+    {:noreply, assign(socket, board: board, old_board: board, amount: amount, message: "")}
   end
 
   @impl true
   def handle_event("solve", _, socket) do
-    board =
+    {status, board} =
       socket.assigns.board
-      |> Scanner.run()
-      |> BTSolver.solve()
+      |> SudokuSolver.run()
 
-    {:noreply, assign(socket, board: board)}
+    {:noreply, assign(socket, board: board, message: status)}
   end
 
   @impl true
   def handle_event("add_to_board", data, socket) do
-    board = socket.assigns.board
+    board = add_to_board(socket.assigns.board, data)
 
-    board = add_to_board(board, data)
     {:noreply, assign(socket, board: board, old_board: board)}
   end
 
@@ -71,15 +64,15 @@ defmodule SudokuSolverWeb.Live.BoardLive.Show do
     y = Map.get(data, "y") |> String.to_integer()
     value = Map.get(data, "value")
 
-    new_value =
+    value_as_integer =
       try do
         String.to_integer(value)
       rescue
         ArgumentError -> 0
       end
 
-    if x in 0..8 and y in 0..8 and new_value in 0..9 do
-      Board.update(board, {x, y}, new_value)
+    if x in 0..8 and y in 0..8 and value_as_integer in 0..9 do
+      SudokuSolver.update(board, {x, y}, value_as_integer)
     else
       board
     end

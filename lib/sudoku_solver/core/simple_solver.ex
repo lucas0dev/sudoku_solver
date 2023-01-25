@@ -6,17 +6,18 @@ defmodule SudokuSolver.Core.SimpleSolver do
 
   alias SudokuSolver.Core.Board
 
-  @spec solve(list) :: list
+  @spec solve(list) :: {:ok, list} | {:full, list} | {:invalid, list}
   def solve(board) do
     with true <- Board.board_correct?(board),
          {:not_full, _} <- Board.check_if_full(board) do
       solve(board, 0, board)
     else
-      _ -> board
+      {:full, _} -> {:ok, board}
+      _ -> {:invalid, board}
     end
   end
 
-  @spec solve(list, non_neg_integer(), list) :: list
+  @spec solve(list, non_neg_integer(), list) :: {:ok, list}
   defp solve(board, i, initial_board) do
     if i < 81 do
       row = rem(i, 9)
@@ -32,7 +33,7 @@ defmodule SudokuSolver.Core.SimpleSolver do
           solve(initial_board)
 
         {:full, board} ->
-          board
+          {:ok, board}
 
         _ ->
           solve(board, i + 1, initial_board)
