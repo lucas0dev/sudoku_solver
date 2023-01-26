@@ -19,25 +19,23 @@ defmodule SudokuSolver.Core.SimpleSolver do
 
   @spec solve(list, non_neg_integer(), list) :: {:ok, list}
   defp solve(board, i, initial_board) do
-    if i < 81 do
-      row = rem(i, 9)
-      col = div(i, 9)
+    row = rem(i, 9)
+    col = div(i, 9)
 
-      with true <- Board.board_at(board, {col, row}) == 0,
-           {:ok, value} <- Board.next_possible_value(board, {col, row}),
-           updated_board <- Board.update(board, {col, row}, value),
-           {:not_full, _board} <- Board.check_if_full(updated_board) do
-        solve(updated_board, i + 1, initial_board)
-      else
-        {:error, nil} ->
-          solve(initial_board)
+    with true <- Board.board_at(board, {col, row}) == 0,
+         {:ok, value} <- Board.next_possible_value(board, {col, row}),
+         updated_board <- Board.update(board, {col, row}, value),
+         {:not_full, _board} <- Board.check_if_full(updated_board) do
+      solve(updated_board, i + 1, initial_board)
+    else
+      {:error, nil} ->
+        solve(initial_board)
 
-        {:full, board} ->
-          {:ok, board}
+      {:full, board} ->
+        {:ok, board}
 
-        _ ->
-          solve(board, i + 1, initial_board)
-      end
+      _ ->
+        solve(board, i + 1, initial_board)
     end
   end
 end

@@ -11,9 +11,8 @@ defmodule SudokuSolver.Core.BoardGenerator do
 
   @spec solvable_board(non_neg_integer()) :: nonempty_list
   def solvable_board(amount_of_zeroes) do
-    full_board = full_board()
     cells_to_delete = get_random_cells(amount_of_zeroes)
-    Board.remove_cells(full_board, cells_to_delete)
+    Board.remove_cells(full_board(), cells_to_delete)
   end
 
   @spec full_board :: nonempty_list
@@ -28,47 +27,43 @@ defmodule SudokuSolver.Core.BoardGenerator do
 
   @spec full_board(list, non_neg_integer(), nonempty_list(non_neg_integer())) :: nonempty_list
   defp full_board(board, cell_to_fill, values) do
-    if cell_to_fill == 81 do
-      board
-    else
-      row = div(cell_to_fill, 9)
-      col = rem(cell_to_fill, 9)
-      [number | rest] = values
-      updated_board = Board.update(board, {col, row}, number)
+    case cell_to_fill do
+      81 ->
+        board
 
-      with true <- Board.board_at(board, {col, row}) == 0,
-           {:check_ok} <- check_row(board, {col, row}, number),
-           {:check_ok} <- check_col(board, {col, row}, number),
-           {:check_ok} <- check_box(board, {col, row}, number) do
-        full_board(updated_board, cell_to_fill + 1, shuffled_values())
-      else
-        false -> full_board(board, cell_to_fill + 1, shuffled_values())
-        {:check_error, _reason} -> full_board(board, cell_to_fill, rest)
-      end
+      _ ->
+        row = div(cell_to_fill, 9)
+        col = rem(cell_to_fill, 9)
+        [value | rest] = values
+        updated_board = Board.update(board, {col, row}, value)
+
+        with {:check_ok} <- check_row(board, {col, row}, value),
+             {:check_ok} <- check_col(board, {col, row}, value),
+             {:check_ok} <- check_box(board, {col, row}, value) do
+          full_board(updated_board, cell_to_fill + 1, shuffled_values())
+        else
+          {:check_error, _reason} -> full_board(board, cell_to_fill, rest)
+        end
     end
   end
 
   @spec check_row(list, coordinates, non_neg_integer()) :: {:check_ok} | {:check_error, :row}
   defp check_row(board, {_x, y}, value) do
-    row = Enum.at(board, y)
-    row_occupied = Enum.member?(row, value)
+    row_values = Enum.at(board, y)
 
-    if row_occupied == false do
-      {:check_ok}
-    else
-      {:check_error, :row}
+    case Enum.member?(row_values, value) do
+      false -> {:check_ok}
+      _ -> {:check_error, :row}
     end
   end
 
   @spec check_col(list, coordinates, non_neg_integer()) :: {:check_ok} | {:check_error, :col}
   defp check_col(board, {x, _y}, value) do
-    col = Enum.map(board, fn row -> Enum.at(row, x) end)
-    col_occupied = Enum.member?(col, value)
+    column_values = Enum.map(board, fn row -> Enum.at(row, x) end)
 
-    if col_occupied == false do
-      {:check_ok}
-    else
-      {:check_error, :col}
+    case Enum.member?(column_values, value) do
+      false -> {:check_ok}
+      _ -> {:check_error, :col}
     end
   end
 
@@ -77,18 +72,15 @@ defmodule SudokuSolver.Core.BoardGenerator do
     start_x = div(cell_x, 3) * 3
     start_y = div(cell_y, 3) * 3
 
-    box =
+    box_values =
       for offset_x <- [0, 1, 2], offset_y <- [0, 1, 2] do
         row = Enum.at(board, offset_y + start_y)
         Enum.at(row, offset_x + start_x)
       end
 
-    box_occupied = Enum.member?(box, value)
-
-    if box_occupied == false do
-      {:check_ok}
-    else
-      {:check_error, :box}
+    case Enum.member?(box_values, value) do
+      false -> {:check_ok}
+      _ -> {:check_error, :box}
     end
   end
 
@@ -99,8 +91,8 @@ defmodule SudokuSolver.Core.BoardGenerator do
 
   @spec get_random_cells(non_neg_integer()) :: nonempty_list(coordinates)
   defp get_random_cells(number) do
-    cells = for x <- 0..8, y <- 0..8, do: {x, y}
-    cells = Enum.shuffle(cells)
-    Enum.take(cells, number)
+    for(x <- 0..8, y <- 0..8, do: {x, y})
+    |> Enum.shuffle()
+    |> Enum.take(number)
   end
 end

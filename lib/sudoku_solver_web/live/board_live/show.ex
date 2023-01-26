@@ -7,10 +7,9 @@ defmodule SudokuSolverWeb.Live.BoardLive.Show do
     board = SudokuSolver.generate_board(amount)
 
     board =
-      if connected?(socket) do
-        board
-      else
-        %{}
+      case connected?(socket) do
+        true -> board
+        _ -> %{}
       end
 
     {:ok, assign(socket, board: board, old_board: board, amount: amount, message: "")}
@@ -34,10 +33,9 @@ defmodule SudokuSolverWeb.Live.BoardLive.Show do
       end
 
     board =
-      if amount in 0..81 do
-        SudokuSolver.generate_board(amount)
-      else
-        SudokuSolver.generate_board(default_amount)
+      case amount in 0..81 do
+        true -> SudokuSolver.generate_board(amount)
+        _ -> SudokuSolver.generate_board(default_amount)
       end
 
     {:noreply, assign(socket, board: board, old_board: board, amount: amount, message: "")}
@@ -56,7 +54,7 @@ defmodule SudokuSolverWeb.Live.BoardLive.Show do
   def handle_event("add_to_board", data, socket) do
     board = add_to_board(socket.assigns.board, data)
 
-    {:noreply, assign(socket, board: board, old_board: board)}
+    {:noreply, assign(socket, board: board)}
   end
 
   defp add_to_board(board, data) do

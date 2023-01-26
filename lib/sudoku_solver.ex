@@ -14,14 +14,14 @@ defmodule SudokuSolver do
 
   @type coordinates :: Board.coordinates()
 
-  @spec run(list) :: {atom, list}
-  def run(board) do
-    task =
+  @spec run(list, function) :: {atom, list}
+  def run(board, solution_finder \\ &combined_algorithms/1) do
+    solution =
       Task.async(fn ->
-        run_workers(board)
+        solution_finder.(board)
       end)
 
-    case Task.yield(task, 5000) || Task.shutdown(task) do
+    case Task.yield(solution, 5000) || Task.shutdown(solution) do
       {:ok, [ok: {status, board}]} ->
         {status, board}
 
@@ -40,8 +40,8 @@ defmodule SudokuSolver do
     Generator.solvable_board(empty_amount)
   end
 
-  @spec run_workers(list) :: [ok: {atom, list}]
-  defp run_workers(board) do
+  @spec combined_algorithms(list) :: [ok: {atom, list}]
+  defp combined_algorithms(board) do
     result =
       1..12
       |> Task.async_stream(

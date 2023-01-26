@@ -138,13 +138,26 @@ defmodule SudokuSolver.Core.BoardTest do
     end
   end
 
-  describe "update(board, {x, y}, value)" do
+  describe "update(board, {x, y}, value) when params are valid" do
     test "should change the value of a cell at given coordinates", %{full_board: full_board} do
       cell_before = Enum.at(Enum.at(full_board, 1), 1)
       updated_board = Board.update(full_board, {1, 1}, 2)
       cell_after = Enum.at(Enum.at(updated_board, 1), 1)
 
       assert cell_before != cell_after
+    end
+  end
+
+  describe "update(board, {x, y}, new_value) when params are invalid" do
+    test "should not update the board", %{board: board} do
+      input_data = [[{10, 1}, 1], [{1, 1}, 10]]
+      [{x, y}, value] = Enum.random(input_data)
+      value_before = Enum.at(Enum.at(board, y), x)
+      board_after = Board.update(board, {x, y}, value)
+      value_after = Enum.at(Enum.at(board_after, y), x)
+
+      assert value_before == value_after
+      assert board_after == board
     end
   end
 

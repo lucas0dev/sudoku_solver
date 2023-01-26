@@ -11,7 +11,6 @@ defmodule SudokuSolver.Core.BacktrackingSolver do
   def solve(board) do
     with true <- Board.board_correct?(board),
          {:not_full, _} <- Board.check_if_full(board) do
-      prepare_allowed_values(board)
       {:ok, find_solution({board, 0, %{}})}
     else
       {:full, _} -> {:ok, board}
@@ -47,32 +46,25 @@ defmodule SudokuSolver.Core.BacktrackingSolver do
 
   @spec get_allowed_values(list) :: list
   defp get_allowed_values(board) do
-    if GenServer.whereis(__MODULE__) != nil do
-      Agent.get(__MODULE__, fn map -> Map.get(map, :allowed_values) end)
-    else
-      prepare_allowed_values(board)
+    case GenServer.whereis(__MODULE__) do
+      nil -> prepare_allowed_values(board)
+      _ -> Agent.get(__MODULE__, fn map -> Map.get(map, :allowed_values) end)
     end
   end
 
+  @spec prepare_allowed_values(list) :: list
   defp prepare_allowed_values(board) do
     values = Board.all_allowed_values(board)
-
-    if GenServer.whereis(__MODULE__) != nil do
-      Agent.update(__MODULE__, fn _ -> %{:allowed_values => values} end)
-    else
-      Agent.start_link(fn -> %{:allowed_values => values} end, name: __MODULE__)
-    end
-
+    Agent.start_link(fn -> %{:allowed_values => values} end, name: __MODULE__)
     values
   end
 
   @spec check_value(non_neg_integer(), list(non_neg_integer())) ::
           {:error, :invalid_value} | {:ok, non_neg_integer()}
   defp check_value(value, possible_list) do
-    if Enum.member?(possible_list, value) do
-      {:ok, value}
-    else
-      {:invalid_value, value}
+    case Enum.member?(possible_list, value) do
+      true -> {:ok, value}
+      _ -> {:invalid_value, value}
     end
   end
 
@@ -93,10 +85,9 @@ defmodule SudokuSolver.Core.BacktrackingSolver do
     value_to_check =
       Enum.find(allowed_depth_values, fn x -> !Enum.member?(checked_depth_values, x) end)
 
-    if value_to_check != nil do
-      {:ok, {cell_coordinates, value_to_check}}
-    else
-      {:error, :no_next_value}
+    case value_to_check do
+      nil -> {:error, :no_next_value}
+      _ -> {:ok, {cell_coordinates, value_to_check}}
     end
   end
 
@@ -112,12 +103,14 @@ defmodule SudokuSolver.Core.BacktrackingSolver do
     checked_depth_values = Map.get(checked_values, depth, [])
     {coordinates, allowed_depth_values} = Enum.at(get_allowed_values(board), depth, [])
 
-    if all_values_checked?(allowed_depth_values, checked_depth_values) do
-      board = Board.update(board, coordinates, 0)
-      updated_checked = Map.update(checked_values, depth, [], fn _ -> [] end)
-      choose_next_step(board, depth - 1, updated_checked)
-    else
-      {board, depth, checked_values}
+    case all_values_checked?(allowed_depth_values, checked_depth_values) do
+      true ->
+        board = Board.update(board, coordinates, 0)
+        updated_checked = Map.update(checked_values, depth, [], fn _ -> [] end)
+        choose_next_step(board, depth - 1, updated_checked)
+
+      _ ->
+        {board, depth, checked_values}
     end
   end
 

@@ -15,10 +15,9 @@ defmodule SudokuSolver.Core.Scanner do
     cells_to_scan = Board.empty_cells(board)
     updated_board = Enum.reduce(cells_to_scan, board, fn cell, acc -> scan_cell(acc, cell) end)
 
-    if board != updated_board do
-      run(updated_board)
-    else
-      updated_board
+    case board != updated_board do
+      true -> run(updated_board)
+      _ -> updated_board
     end
   end
 
@@ -33,10 +32,9 @@ defmodule SudokuSolver.Core.Scanner do
       |> Enum.uniq_by(fn x -> x end)
       |> Enum.at(0)
 
-    if result != nil do
-      Board.update(board, cell, result)
-    else
-      board
+    case result do
+      nil -> board
+      _ -> Board.update(board, cell, result)
     end
   end
 
