@@ -119,6 +119,7 @@
   100% { opacity: 0; }
 }
 
+
 .main {
   display: flex;
 }
@@ -127,15 +128,21 @@
   display: flex;
   flex-direction: column;
 }
+
+.tbody {
+  display: flex;
+  flex-direction: column;
+}
+
+.side-panel{
+  display: flex;
+  flex-direction: column;
+}
+
  
 .board {
   display: flex;
   justify-content: flex-start;
-}
- 
-.tbody {
-  display: flex;
-  flex-direction: column;
 }
  
 .cell {
@@ -206,17 +213,10 @@
   text-align: center;
 }
 
-.side-panel{
-  display: flex;
-  flex-direction: column;
-}
-
-.button{
-  width: 100%;
-}
-
 .gen-form{
   margin: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .messages {
@@ -232,10 +232,45 @@
   background-color: green;
 }
 
-.msg-positive{
-  background-color: green;
-}
-
 .msg-invalid{
   background-color: red;
+}
+
+.btn-container {
+  display: flex;
+  justify-content: space-between;
+  align-content: space-between;
+  flex-direction: row;
+}
+
+.button {
+  margin: 5px;
+  flex: 50%;
+}
+
+@media only screen and (max-width: 768px){
+  .main {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .board {
+    display: flex;
+    flex-direction: column;
+  }
+  .row {
+    display:flex;
+    flex-direction: row;
+  }
+ 
+
+  .cell {
+    height: inherit;
+    aspect-ratio: 1/1;
+  }
+
+  .gen-form{
+    display: flex;
+    flex-direction: column;
+  }
 }
