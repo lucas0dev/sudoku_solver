@@ -1,9 +1,11 @@
 defmodule SudokuSolverWeb.Live.BoardLive.Show do
   use SudokuSolverWeb, :live_view
 
+  @default_amount 50
+
   @impl true
   def mount(_params, _session, socket) do
-    amount = 60
+    amount = @default_amount
     board = SudokuSolver.generate_board(amount)
 
     board =
@@ -23,19 +25,18 @@ defmodule SudokuSolverWeb.Live.BoardLive.Show do
 
   def handle_event("generate", data, socket) do
     amount = Map.get(data, "amount")
-    default_amount = 60
 
     amount =
       try do
         String.to_integer(amount)
       rescue
-        ArgumentError -> default_amount
+        ArgumentError -> @default_amount
       end
 
     board =
       case amount in 0..81 do
         true -> SudokuSolver.generate_board(amount)
-        _ -> SudokuSolver.generate_board(default_amount)
+        _ -> SudokuSolver.generate_board(@default_amount)
       end
 
     {:noreply, assign(socket, board: board, old_board: board, amount: amount, message: "")}
