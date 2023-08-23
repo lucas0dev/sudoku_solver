@@ -1,18 +1,16 @@
-# SudokuSolver
+# Sudoku - generator and solver
 
-To start your Phoenix server:
+The application can generate a solvable sudoku board based on the number of blank cells entered by the user.
+First, it solves the board by scanning all possible values in each cell, and if any cell has only one possible value, it fills it with that.
+It repeats the scan until no such cell is found. Then it solves the board with the given solver.
+If a solver is not provided, it uses a backtracking algorithm and a simple solver (it tries to solve the board by randomly selecting one of the available values for each cell).
+The algorithm starts 12 parallel tasks - 6 for each solver and after receiving the first result it stops the other tasks and shows the result.
 
-  * Install dependencies with `mix deps.get`
-  * Start Phoenix endpoint with `mix phx.server` or inside IEx with `iex -S mix phx.server`
+Live demo - https://purple-star-2320.fly.dev/
 
-Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
+## Tech
+The application was written using basic elixir functions and phoenix live components to represent a sudoku board.
 
-Ready to run in production? Please [check our deployment guides](https://hexdocs.pm/phoenix/deployment.html).
 
-## Learn more
+![Sudoku solver demo](sudoku.gif)
 
-  * Official website: https://www.phoenixframework.org/
-  * Guides: https://hexdocs.pm/phoenix/overview.html
-  * Docs: https://hexdocs.pm/phoenix
-  * Forum: https://elixirforum.com/c/phoenix-forum
-  * Source: https://github.com/phoenixframework/phoenix
